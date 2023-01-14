@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <netcdf.h>
+#include <mpi.h>
 
 //#define FILE_NAME "tos_Omon_AWI-ESM-1-1-LR_historical_r1i1p1f1_gn_185001-185012.nc"
 
@@ -9,13 +10,12 @@
 #define FILE_NAME_UNOD "/shares/HPC4DataScience/FESOM2/unod.fesom.2010.nc"
 #define FILE_NAME_VNOD "/shares/HPC4DataScience/FESOM2/vnod.fesom.2010.nc"
 #define FILE_NAME_MESH "/shares/HPC4DataScience/FESOM2/fesom.mesh.diag.nc"
-//a file for the output shall be written and created also
 
+#define NDIMS 3
+#define NTIME 12
+#define NNZ1 69
+#define NNOD2 8852366 
 
-/*
-how to split data into portions? 
-i.e accessing data only in a single timeframe or a single node at all timestamps and levels
-*/
 
 
 //error function
@@ -28,61 +28,65 @@ int main (int argc, char** argv){
     /* .nc file */
     int ncid;
 
-    /* Variables for reading file info */
-    int ndims_in, nvars_in, ngatts_in, unlimdimid_in;
 
     /* var ids */
-    int nz1_varid;
+    int unod_id;
 
     /* Error handling. */
     int retval;
 
+    /*
+    parallel programming variables
+    */
+    int comm_sz; //number of processes
+    int my_rank; //rank of each process
+
+    //splitting arrays
+    size_t start[NDIMS], count[NDIMS];
+
     /* Open the file. */
-    if ((retval = nc_open(FILE_NAME, NC_NOWRITE, &ncid)))
+    if ((retval = nc_open(FILE_NAME_UNOD, NC_NOWRITE, &ncid)))
         ERR(retval);
 
 
-    /* Reading file info */
-    if ((retval = nc_inq(ncid, &ndims_in, &nvars_in, &ngatts_in, &unlimdimid_in)))
-        ERR(retval);
+    //PARALLELIZATION BEGINS   --------------------------------------------
+    MPI_Init(NULL,NULL);
+    MPI_Comm_size(MPI_COMM_WORLD,&comm_sz);
+    MPI_Comm_rank(MPI_COMM_WORLD,&my_rank);
 
-    printf("dimensions: %d",ndims_in);
-    printf("\n");
-    printf("variables: %d",nvars_in);
-    printf("\n");
-    printf("global attributes: %d",ngatts_in);
-    printf("\n");
-    printf("unlimdimid: %d",unlimdimid_in);
+ 
+    //var where the dummy read value
+    float values[NNZ1][NTIME][1]; 
 
 
-
-    /* read the nz1 variable */
-
-    float nz1[69]; //already know there are 69 values
-
-    if ((retval = nc_inq_varid(ncid, "nz1", &nz1_varid)))
-        ERR(retval);
-
-    if ((retval = nc_get_var1_float(ncid, nz1_varid, nz1)))
-        ERR(retval);
-    
-    
-    /* print nz1 */
-    printf("\n printing nz1: \n");
-
-    int i;
-    for ( i = 0; i < 69; i++){
-        printf("%f \n",nz1[i]);
-
+    //setting start and count for each process (8 process, each one reads 69*12*1 values of unod)
+    int i=0;
+    for (i = 0; i < comm_sz; i++){
+        if(i==my_rank){
+            start[0]=0;
+            start[1]=0;
+            start[2]=i;
+            count[0]=69;
+            count[1]=12;
+            count[2]=i+1;
+        }
     }
-    
+
+    if ((retval = nc_inq_varid(ncid, "unod", &unod_id))){
+        ERR(retval);
+    }
+
+    if ((retval = nc_get_vara_float(ncid,unod_id,start,count,&values[0][0][0]))){
+        ERR(retval);
+    }	
+
+    printf("process %d, values[0][0][0]=%f \n",my_rank,values[0][0][0]);
+
+    MPI_Finalize();
 
     /* Close the file. */
     if ((retval = nc_close(ncid)))
         ERR(retval);
-
-
-
 
     return 0;
 }
