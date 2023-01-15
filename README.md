@@ -1,7 +1,7 @@
 # hpc4ds
 High performance computing for data science project
 
-##Instructions
+Instructions:
 to run the program, load the modules:
 
 module load mpich-3.2
