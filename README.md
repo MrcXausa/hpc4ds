@@ -14,8 +14,8 @@ qsub script.sh
 
 To check the execution status use:
 
-qstat <id>
+qstat id
 
-where id is the job id returned by the qsub command
+where id is the job id returned by the qsub command.
 
 
