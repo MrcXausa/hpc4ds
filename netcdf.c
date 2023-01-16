@@ -3,18 +3,20 @@
 #include <netcdf.h>
 #include <mpi.h>
 
-//#define FILE_NAME "tos_Omon_AWI-ESM-1-1-LR_historical_r1i1p1f1_gn_185001-185012.nc"
-
 
 /* files names */
 #define FILE_NAME_UNOD "/shares/HPC4DataScience/FESOM2/unod.fesom.2010.nc"
 #define FILE_NAME_VNOD "/shares/HPC4DataScience/FESOM2/vnod.fesom.2010.nc"
 #define FILE_NAME_MESH "/shares/HPC4DataScience/FESOM2/fesom.mesh.diag.nc"
 
+/* dimensions and amout of values for each one */
 #define NDIMS 3
 #define NTIME 12
 #define NNZ1 69
 #define NNOD2 8852366 
+
+/* amount of nodes each process reads */
+#define NNODE 80
 
 
 
@@ -35,9 +37,7 @@ int main (int argc, char** argv){
     /* Error handling. */
     int retval;
 
-    /*
-    parallel programming variables
-    */
+    /* parallel programming variables */
     int comm_sz; //number of processes
     int my_rank; //rank of each process
 
@@ -45,41 +45,84 @@ int main (int argc, char** argv){
     size_t start[NDIMS], count[NDIMS];
 
     /* Open the file. */
+    
     if ((retval = nc_open(FILE_NAME_UNOD, NC_NOWRITE, &ncid)))
         ERR(retval);
 
 
     //PARALLELIZATION BEGINS   --------------------------------------------
     MPI_Init(NULL,NULL);
+
     MPI_Comm_size(MPI_COMM_WORLD,&comm_sz);
     MPI_Comm_rank(MPI_COMM_WORLD,&my_rank);
 
- 
     //var where the dummy read value
-    float values[NNZ1][NTIME][100]; 
+    double values[NTIME][NNZ1][NNODE]; 
 
 
-
-
+    //read only one value
     start[0]=0;
-    start[1]=0;
-    start[2]=0;
+    start[1]=60;
+    start[2]=my_rank*100;
 
-    count[0]=12;
-    count[1]=69;
-    count[2]=100;
+    count[0]=NTIME;
+    count[1]=9;
+    count[2]=NNODE;
 
     if ((retval = nc_inq_varid(ncid, "unod", &unod_id))){
         ERR(retval);
     }
 
-    printf("ciao da %d",my_rank);
-
-    if ((retval = nc_get_vara_float(ncid,unod_id,start,count,&values[0][0][0]))){
+    if ((retval = nc_get_vars_double(ncid,unod_id,start,count,NULL,&values[0][0][0]))){
         ERR(retval);
     }	
 
-    printf("process %d, values[0][0][0]=%f \n",my_rank,values[0][0][0]);
+
+    int i,j,k; //looping indexes
+    printf("process %d, values[11][77][7] = %lf \n",my_rank,values[11][77][7]);
+
+    /*
+    for(j=0;j<NTIME;j++){ //for each timestamp,
+        for(i=0;i<NNODE;i++){ //for each node in that timestamp
+            for(k=0;k<9;k++){ //take all the values in the different mashes and sum them
+                printf("process %d, values[%d][%d][%d] = %lf \n",my_rank,j,i,k,values[j][i][k]);
+            }
+        }
+    }
+    */
+
+
+    /*
+    this matrix will contain the averages for each node at each timestamp.
+    this will be written on a two-dimensional file
+
+    float averages[NTIME][NNODE]; 
+
+    float sum; //partial sum to calculate the averages
+    */
+    
+    
+    /*
+    //algorith to calculate the averages
+    for(j=0;j<NTIME;j++){ //for each timestamp,
+        for(i=0;i<NNODE;i++){ //for each node in that timestamp
+            sum=0;
+            for(k=0;k<NNZ1;k++){ //take all the values in the different mashes and sum them
+                sum+=values[j][i][k];
+            }
+            averages[j][i]=sum/NNZ1; //and then set the result
+        }
+    }
+
+    //printing averages
+    for(j=0;j<NTIME;j++){ //for each timestamp
+        for(i=0;i<NNODE;i++){ //for each node in that timestamp
+            printf("process %d, values[%d][%d] = %f \n",my_rank,j,i,averages[j][i]);
+        }
+    }
+    */
+    
+    
 
     /* Close the file. */
     if ((retval = nc_close(ncid)))
@@ -91,3 +134,12 @@ int main (int argc, char** argv){
 
     return 0;
 }
+
+/*
+open questions (still not handled):
+ - work also on vnod
+ - write the output files (every process write its part or not)
+
+problems:
+ - weird behaviour reading same data for 80 nodes
+*/

@@ -5,5 +5,5 @@
 #ignore folders
 /hpc4ds
 
-#ignore all aoutput and error files
+#ignore all output and error files
 script.sh.*
