@@ -3,7 +3,7 @@
 #PBS -l select=2:ncpus=4:mem=2gb
 
 #execution time
-#PBS -l walltime=0:03:00
+#PBS -l walltime=0:02:00
 
 #set execution queue
 #PBS -q short_cpuQ
