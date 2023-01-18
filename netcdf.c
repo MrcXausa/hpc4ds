@@ -1,93 +1,132 @@
-#include <stdio.h>
-#include <string.h>
-#include <netcdf.h>
-#include <mpi.h>
-
-//#define FILE_NAME "tos_Omon_AWI-ESM-1-1-LR_historical_r1i1p1f1_gn_185001-185012.nc"
+#include "definition.h"
 
 
-/* files names */
-#define FILE_NAME_UNOD "/shares/HPC4DataScience/FESOM2/unod.fesom.2010.nc"
-#define FILE_NAME_VNOD "/shares/HPC4DataScience/FESOM2/vnod.fesom.2010.nc"
-#define FILE_NAME_MESH "/shares/HPC4DataScience/FESOM2/fesom.mesh.diag.nc"
-
-#define NDIMS 3
-#define NTIME 12
-#define NNZ1 69
-#define NNOD2 8852366 
-
-
-
-//error function
-#define ERR(e) {printf("Error: %s\n", nc_strerror(e)); return 2;}
-
-
-/* main */
 int main (int argc, char** argv){
 
     /* .nc file */
     int ncid;
 
-
-    /* var ids */
+    /* var id */
     int unod_id;
 
     /* Error handling. */
     int retval;
 
-    /*
-    parallel programming variables
-    */
-    int comm_sz; //number of processes
-    int my_rank; //rank of each process
+    /* parallel programming variables */
+    int comm_sz;
+    int my_rank;
 
-    //splitting arrays
+    /* splitting arrays */
     size_t start[NDIMS], count[NDIMS];
 
     /* Open the file. */
+    
     if ((retval = nc_open(FILE_NAME_UNOD, NC_NOWRITE, &ncid)))
         ERR(retval);
 
 
-    //PARALLELIZATION BEGINS   --------------------------------------------
+    //PARALLELIZATION BEGINS --------------------------------------------
     MPI_Init(NULL,NULL);
+
     MPI_Comm_size(MPI_COMM_WORLD,&comm_sz);
     MPI_Comm_rank(MPI_COMM_WORLD,&my_rank);
+    MPI_Barrier(MPI_COMM_WORLD);
+    /* Array for reading values from file */
+    float values[NTIME][NNZ1][NNODE]; 
 
- 
-    //var where the dummy read value
-    float values[NNZ1][NTIME][100]; 
-
-
-
-
+    //starting time
+    start_time();
+    /* Reading boundaries */
     start[0]=0;
     start[1]=0;
-    start[2]=0;
+    start[2]=my_rank*100;
 
-    count[0]=12;
-    count[1]=69;
-    count[2]=100;
+    count[0]=NTIME;
+    count[1]=NNZ1;
+    count[2]=NNODE;
 
+    /* Reading variable id */
     if ((retval = nc_inq_varid(ncid, "unod", &unod_id))){
         ERR(retval);
     }
 
-    printf("ciao da %d",my_rank);
-
-    if ((retval = nc_get_vara_float(ncid,unod_id,start,count,&values[0][0][0]))){
+    /* Reading values */
+    if ((retval = nc_get_vars_float(ncid,unod_id,start,count,NULL,&values[0][0][0]))){
         ERR(retval);
     }	
 
-    printf("process %d, values[0][0][0]=%f \n",my_rank,values[0][0][0]);
+
+    /* Output matrix with the averages for each node at each timestamp */
+    float averages[NTIME][NNODE];
+
+    //printValues(my_rank,values);
+    
+    /* Computing averages */
+    computeAverages(values,averages);
+
+    /* Printing on stdout */
+    printAverages(my_rank,averages);
+   
 
     /* Close the file. */
     if ((retval = nc_close(ncid)))
         ERR(retval);
 
+    
+    //ending time and calculation the total time taken by a program
+    end_time();
+    statistics();
+    double avg = getavgtime();
+    if(my_rank == 0) {
+      printf("Min: %lf  Max: %lf  Avg:  %lf\n", getmintime(), getmaxtime(),avg/= numprocs);
+    }
+
     MPI_Finalize();
-
-
 
     return 0;
 }
+
+
+void printValues(int my_rank,float values[NTIME][NNZ1][NNODE]){
+
+    int i,j,k; //looping indexes
+
+    for(j=0;j<NTIME;j++){ //for each timestamp,
+        for(i=0;i<NNODE;i++){ //for each node in that timestamp
+            for(k=0;k<NNZ1;k++){ //take all the values in the different mashes and sum them
+                printf("process %d, values[%d][%d][%d] = %lf \n",my_rank,j,i,k,values[j][k][i]);
+            }
+        }
+    }
+}
+
+
+void printAverages(int my_rank,float averages[NTIME][NNODE]){
+
+    int i,j;//looping indexes
+
+    for(j=0;j<NTIME;j++){ //for each timestamp
+        for(i=0;i<NNODE;i++){ //for each node 
+            printf("process %d, values[%d][%d] = %f \n",my_rank,j,i,averages[j][i]);
+        }
+    }
+    
+}
+
+
+void computeAverages(float values[NTIME][NNZ1][NNODE], float averages[NTIME][NNODE]){
+
+    int i,j,k;
+    float sum; //partial sum to calculate the averages
+
+    for(j=0;j<NTIME;j++){ //for each timestamp,
+        for(i=0;i<NNODE;i++){ //for each node in that timestamp
+            sum=0;
+            for(k=0;k<NNZ1;k++){ //take all the values in the different mashes and sum them
+                sum+=values[j][k][i];
+            }
+            averages[j][i]=sum/NNZ1; //and then set the result
+        }
+    }
+}
+
