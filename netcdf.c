@@ -39,8 +39,9 @@ int main (int argc, char** argv){
     /* Reading boundaries */
     start[0]=0;
     start[1]=0;
-    start[2]=my_rank*100;
+    start[2]=my_rank*NNODE;
 
+    // how many nodes from the index
     count[0]=NTIME;
     count[1]=NNZ1;
     count[2]=NNODE;
@@ -78,7 +79,7 @@ int main (int argc, char** argv){
     statistics();
     double avg = getavgtime();
     if(my_rank == 0) {
-      printf("Min: %lf  Max: %lf  Avg:  %lf\n", getmintime(), getmaxtime(),avg/= numprocs);
+      printf("Min: %lf  Max: %lf  Avg:  %lf Total_time: %lf \n", getmintime(), getmaxtime(),avg/= numprocs,gettottime());
     }
 
     MPI_Finalize();
@@ -103,14 +104,19 @@ void printValues(int my_rank,float values[NTIME][NNZ1][NNODE]){
 
 void printAverages(int my_rank,float averages[NTIME][NNODE]){
 
-    int i,j;//looping indexes
-
-    for(j=0;j<NTIME;j++){ //for each timestamp
-        for(i=0;i<NNODE;i++){ //for each node 
-            printf("process %d, values[%d][%d] = %f \n",my_rank,j,i,averages[j][i]);
-        }
-    }
+    int i,j,totcount=0,count;//looping indexes
     
+    for(j=0;j<NTIME;j++){ //for each timestamp
+    count=0;
+        for(i=0;i<NNODE;i++){ //for each node 
+            // printf("process %d, values[%d][%d] = %f \n",my_rank,j,i,averages[j][i]);
+            count++;
+            totcount++;
+        }
+    printf("process %d  took %d nodes of mesh = \n",my_rank,count);
+    }
+    printf("Total nodes processed  %d = \n",totcount);
+    printf("Total Processes = %d\n",numprocs);
 }
 
 

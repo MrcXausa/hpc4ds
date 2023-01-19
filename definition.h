@@ -15,14 +15,13 @@
 #define NDIMS 3
 #define NTIME 12
 #define NNZ1 69
-#define NNOD2 8852366 
+#define NNOD2 8852366
 
 /* amount of nodes each process reads */
-#define NNODE 100
-
-
-double numprocs = 16;
-
+#define number_of_nodes 8852366
+#define numprocs 8
+int temp = (int)(number_of_nodes / numprocs);
+#define NNODE temp
 //error function
 #define ERR(e) {printf("Error: %s\n", nc_strerror(e)); return 2;}
 
@@ -35,4 +34,5 @@ void statistics();
 double getmaxtime();
 double getmintime();
 double getavgtime();
+double gettottime();
 #endif
