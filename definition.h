@@ -18,7 +18,7 @@
 #define NNOD2 8852366 
 
 /* amount of nodes each process reads */
-#define NNODE 100
+#define NNODE 1000000
 
 
 //error function
