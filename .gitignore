@@ -10,3 +10,7 @@ script.sh.*
 
 #ignore .nc files
 *.nc
+
+#ignore compiled outputs
+netcdf
+*.o
