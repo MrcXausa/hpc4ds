@@ -7,3 +7,6 @@
 
 #ignore all output and error files
 script.sh.*
+
+#ignore .nc files
+*.nc

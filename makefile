@@ -1,6 +1,6 @@
 CC = mpicc
 
-CFLAGS = -Wall -g
+CFLAGS = -Wall -g -fopenmp
 
 COMPFLAGS = -std=c99 -I /apps/netCDF4.7.0--gcc-9.1.0/include
 

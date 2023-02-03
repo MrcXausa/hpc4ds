@@ -21,7 +21,3 @@ void statistics(){
 double getmaxtime() {return maxtime;}
 double getmintime() {return mintime;}
 double getavgtime() {return avgtime;}
-    // if (myrank == 0) {
-    //   avgtime /= numprocs;
-    //   printf("Min: %lf  Max: %lf  Avg:  %lf\n", mintime, maxtime,avgtime);
-    // }
