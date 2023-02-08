@@ -1,4 +1,3 @@
-
 /* 
 Define how many nodes each process has to take care about.
 The last process manages the remaining nodes from the division.
@@ -21,9 +20,10 @@ void computeAverages(float* values, float* averages,int nnode){
     int i,j,k;
     float sum; //partial sum to calculate the averages
     
-    //#pragma omp parallel for 
-    for(j=0;j<NTIME;j++){ 
 
+    #pragma omp parallel for private(j,i,k,sum) num_threads(NTIME)
+    for(j=0;j<NTIME;j++){ 
+        //printf("threadId = %d \n", omp_get_thread_num());
         int o_timestamp=j*NNZ1*nnode; //offset to access the various timestamps 
 
         for(i=0;i<nnode;i++){ //for each node in that timestamp
@@ -121,12 +121,12 @@ int writeFile(int comm_sz, float* beginning,int nnode,int rest){
     if ((retval = nc_enddef(oncid)))
         return retval;
 
+
     /* 
         store the beginning of the file, then gather the data produced 
         by other processes and write them in the file recalling that the last
         process might have worked on more nodes than the others
     */
-
     float* message=(float *)malloc(NTIME*nnode*sizeof(float));
     int p;
     for(p=0;p<comm_sz;p++){
@@ -160,7 +160,7 @@ int writeFile(int comm_sz, float* beginning,int nnode,int rest){
                 return retval;
             }
         }
-        else{ // for all other iterations, gather data and write it in the file
+        else{ // for all other iterations, simply gather data and write it in the file
             MPI_Recv(message,NTIME*nnode,MPI_FLOAT,p,0,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
 
             startp[0]=0;
@@ -173,14 +173,13 @@ int writeFile(int comm_sz, float* beginning,int nnode,int rest){
                 free(message);
                 return retval;
             }
-        }
-       
-            
+        } 
     }
+
     free(message);
 
     if ((retval = nc_close(oncid)))
-      return retval;
+        return retval;
 
     return retval;
         
