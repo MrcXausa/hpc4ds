@@ -1,7 +1,6 @@
-#include "definition.h"
+#include "definitions.h"
 #include "benchmarking.h"
 #include "read-manipulation-write.h"
-#include <stdlib.h>
 
 
 int main (int argc, char** argv){
@@ -13,6 +12,9 @@ int main (int argc, char** argv){
     /* Error handling */
     int retval;
 
+    /* Handle node/process division rest */
+    int rest=0;
+
     //PARALLELIZATION BEGINS --------------------------------------------
     MPI_Init(NULL,NULL);
 
@@ -21,57 +23,69 @@ int main (int argc, char** argv){
     MPI_Barrier(MPI_COMM_WORLD);
 
 
-
+    /* Define how many nodes each process reads */
+    int nnode=getNnode(my_rank,comm_sz,&rest);
     //starting time
     start_time();
 
     /* Splitting arrays */
     size_t start[NDIMS], count[NDIMS];
 
- 
-
-
     /* Reading boundaries */
     start[0]=0;
     start[1]=0;
-    start[2]=my_rank*NNODE;
+    start[2]=my_rank*(nnode-rest); 
 
     // how many nodes from the index
     count[0]=NTIME;
     count[1]=NNZ1;
-    count[2]=NNODE;
+    count[2]=nnode;
 
     /* Dinamically allocated matrix to read data from the nc file */
-    float* values=(float *)malloc(NTIME*NNZ1*NNODE*sizeof(float));
+    float* values=(float *)malloc(NTIME*NNZ1*nnode*sizeof(float));
        
     /* Output matrix with the averages for each node at each timestamp */
-    float* averages=(float *)malloc(NTIME*NNODE*sizeof(float));
+    float* averages=(float *)malloc(NTIME*nnode*sizeof(float));
 
     /* Read data from .nc file */
     if ((retval = readVar(start,count,values))!=0){
+        free(values); 
+        free(averages);
         ERR(retval);
     }
     
     /* Computing averages */
-    computeAverages(values,averages);
-
-    /* Printing on stdout */
-    printAverages(my_rank,averages);
-
-
+    computeAverages(values,averages,nnode);
     
-    //ending time and calculation the total time taken by a program
+    /* Ending time and calculation the total time taken by a program */
     end_time();
     statistics();
     double avg = getavgtime();
 
     if(my_rank == 0) {
-      printf("Min: %lf  Max: %lf  Avg:  %lf\n", getmintime(), getmaxtime(),avg/= comm_sz);
+
+        /* Write the output file */
+        if ((retval = writeFile(comm_sz,averages,nnode,rest))){
+            free(values); 
+            free(averages);
+            ERR(retval);    
+        }
+
+        /* Print performance measures */
+        printf("Process: %d  \n",comm_sz);
+        printf("Min: %lf  Max: %lf  Avg:  %lf\n", getmintime(), getmaxtime(),avg/= comm_sz);
+        
+    }
+    else{
+        /* Send data to process 0 */
+        MPI_Send(averages,NTIME*nnode,MPI_FLOAT,0,0,MPI_COMM_WORLD);
     }
 
 
-    /* Deallocate matrix */
+    /* Deallocate matrices */
     free(values); 
+    free(averages);
+    
 
     MPI_Finalize();
 

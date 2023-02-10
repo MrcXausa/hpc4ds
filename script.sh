@@ -3,10 +3,11 @@
 #PBS -l select=1:ncpus=1:mem=64gb
 
 #execution time
-#PBS -l walltime=00:30:00
+#PBS -l walltime=02:00:00
 
 #set execution queue
 #PBS -q short_cpuQ
+
 
 #load modules and run the program
 module load mpich-3.2
