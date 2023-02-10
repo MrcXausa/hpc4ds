@@ -29,6 +29,7 @@ int main (int argc, char** argv){
     int retval,ncidavg,ncidcomp;
     int unod_id,unodavg_id;
     int chosenNode=NNOD2-1;
+    int chosenTimestamp=9;
 
     //--------------------------------------- Open both files --------------------------------
     if ((retval = nc_open("/shares/HPC4DataScience/FESOM2/unod.fesom.2010.nc", NC_NOWRITE, &ncidcomp)))
@@ -47,12 +48,12 @@ int main (int argc, char** argv){
 
 
     /*
-    Read data from the main file. Take a specific timestamp and a specific node and
-    all the levels. Then do the averages over all value
+        Read data from the main file. Take a specific timestamp and a specific node and
+        all the levels. Then do the averages over all levels values.
     */
     size_t start[NDIMS], count[NDIMS];
     
-    start[0]=11;
+    start[0]=chosenTimestamp;
     start[1]=0; 
     start[2]=chosenNode; 
 
@@ -66,7 +67,6 @@ int main (int argc, char** argv){
     if ((retval = nc_get_vars_float(ncidcomp,unod_id,start,count,NULL,&values[0][0][0]))){
         return(retval);
     }
-    printf("hello \n");
     int i;
     float temp=0;
     float value;
@@ -77,11 +77,14 @@ int main (int argc, char** argv){
 
 
 
-
+    /*
+        Read data from the output file produced by the script file. 
+        Take a specific timestamp and a specific node.
+    */
 
     size_t start1[2], count1[2];
 
-    start1[0]=11; 
+    start1[0]=chosenTimestamp; 
     start1[1]=chosenNode; 
 
     count1[0]=1; 
