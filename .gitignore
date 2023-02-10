@@ -13,4 +13,5 @@ script.sh.*
 
 #ignore compiled outputs
 netcdf
+validity
 *.o
