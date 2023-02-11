@@ -74,6 +74,7 @@ int main (int argc, char** argv){
         }
 
         /* Print performance measures */
+        printf("Process: %d  \n",comm_sz);
         printf("Min: %lf  Max: %lf  Avg:  %lf\n", getmintime(), getmaxtime(),avg/= comm_sz);
         
     }
