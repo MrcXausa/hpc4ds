@@ -14,7 +14,7 @@ void computeAverages(float* values, float* averages,int tpp){
     int i,j,k;
     float sum; //partial sum to calculate the averages
     
-
+ 
     #pragma omp parallel for private(j,i,k,sum) num_threads(NTIME)
     for(j=0;j<tpp;j++){ 
         //printf("threadId = %d \n", omp_get_thread_num());
