@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#PBS -l select=1:ncpus=1:mem=64gb
+#PBS -l select=1:ncpus=1:mem=84gb
 
 #execution time
 #PBS -l walltime=02:00:00
@@ -12,4 +12,4 @@
 #load modules and run the program
 module load mpich-3.2
 module load netcdf-4.7.0--gcc-9.1.0 hdf5-1.10.5--gcc-9.1.0
-mpirun.actual -n 1 /home/huma.rehman/climate_data_analysis_files/netcdf
+mpirun.actual -n 1 /home/huma.rehman/climate_data_analysis_files/nodes_analysis/netcdf
