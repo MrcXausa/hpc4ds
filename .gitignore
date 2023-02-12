@@ -6,7 +6,8 @@
 /hpc4ds
 
 #ignore all output and error files
-script.sh.*
+script_n.sh.*
+script_t.sh.*
 
 #ignore .nc files
 *.nc
