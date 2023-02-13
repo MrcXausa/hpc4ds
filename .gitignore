@@ -4,9 +4,12 @@
 
 #ignore folders
 /hpc4ds
+/nodes_1p
+/timestamp_1p
 
 #ignore all output and error files
-script.sh.*
+script_n.sh.*
+script_t.sh.*
 
 #ignore .nc files
 *.nc

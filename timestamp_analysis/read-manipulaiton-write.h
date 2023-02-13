@@ -59,7 +59,7 @@ int readVar(const size_t start[NDIMS], const size_t count[NDIMS], float* values)
     }
 
     /* Reading values */
-    if ((retval = nc_get_vars_float(ncid,unod_id,start,count,NULL,values))){
+    if ((retval = nc_get_vara_float(ncid,unod_id,start,count,values))){
         return(retval);
     }
 
