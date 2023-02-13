@@ -1,0 +1,48 @@
+before readvar, process 0 
+before readvar, process 1 
+before readvar, process 6 
+before readvar, process 4 
+before readvar, process 2 
+before readvar, process 5 
+before readvar, process 8 
+before readvar, process 10 
+before readvar, process 3 
+before readvar, process 7 
+before readvar, process 9 
+before readvar, process 11 
+before computeavg, process 0 
+before computeavg, process 6 
+before message sent, process 6 
+before computeavg, process 10 
+before computeavg, process 11 
+before computeavg, process 5 
+before computeavg, process 4 
+before message sent, process 11 
+before message sent, process 10 
+before message sent, process 5 
+before message sent, process 4 
+before computeavg, process 8 
+before computeavg, process 1 
+before computeavg, process 7 
+before computeavg, process 9 
+before computeavg, process 2 
+before computeavg, process 3 
+before message sent, process 7 
+before message sent, process 2 
+before message sent, process 9 
+before message sent, process 8 
+before message sent, process 3 
+before message sent, process 1 
+after message sent process 1 
+after message sent process 2 
+after message sent process 3 
+after message sent process 4 
+after message sent process 5 
+after message sent process 6 
+after message sent process 7 
+after message sent process 8 
+after message sent process 9 
+after message sent process 10 
+after message sent process 11 
+Process: 12  
+Min: 2.726470  Max: 3.649704  Avg:  3.156204

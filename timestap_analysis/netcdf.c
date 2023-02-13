@@ -26,8 +26,7 @@ int main (int argc, char** argv){
     /* Timestamps per process */
     int tpp=getTpp(comm_sz); 
     
-    //starting time
-    start_time();
+   
 
     /* Splitting arrays */
     size_t start[NDIMS], count[NDIMS];
@@ -55,7 +54,8 @@ int main (int argc, char** argv){
         free(averages);
         ERR(retval);
     }
-    
+     //starting time
+    start_time();
     /* Computing averages */
     printf("before computeavg, process %d \n",my_rank);
     computeAverages(values,averages,tpp);

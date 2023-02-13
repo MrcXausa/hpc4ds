@@ -28,7 +28,7 @@ int main (int argc, char** argv){
     /* Define how many nodes each process reads */
     int nnode=getNnode(my_rank,comm_sz,&rest);
     //starting time
-    start_time();
+    // start_time();
 
     /* Splitting arrays */
     size_t start[NDIMS], count[NDIMS];
@@ -55,7 +55,7 @@ int main (int argc, char** argv){
         free(averages);
         ERR(retval);
     }
-    
+    start_time();
     /* Computing averages */
     computeAverages(values,averages,nnode);
     
@@ -72,9 +72,9 @@ int main (int argc, char** argv){
             free(averages);
             ERR(retval);    
         }
-
+        
         /* Print performance measures */
-        printf("Process: %d  \n",comm_sz);
+        printf("Process: %d  node : %d \n",comm_sz,NNOD2);
         printf("Min: %lf  Max: %lf  Avg:  %lf\n", getmintime(), getmaxtime(),avg/= comm_sz);
         
     }

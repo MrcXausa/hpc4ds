@@ -10,7 +10,8 @@
 #define NDIMS 3
 #define NTIME 12
 #define NNZ1 69
-#define NNOD2 8852366 
+#define NNOD2 4426183
+// #define NNOD2 8852366 
 
 /* Dimensions names for output file */
 #define TIME_NAME "time"

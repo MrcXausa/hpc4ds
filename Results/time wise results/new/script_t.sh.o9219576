@@ -1,0 +1,16 @@
+before readvar, process 0 
+before readvar, process 1 
+before readvar, process 2 
+before readvar, process 3 
+before computeavg, process 3 
+before computeavg, process 1 
+before message sent, process 3 
+before message sent, process 1 
+before computeavg, process 0 
+before computeavg, process 2 
+before message sent, process 2 
+after message sent process 1 
+after message sent process 2 
+after message sent process 3 
+Process: 4  
+Min: 3.012369  Max: 4.203561  Avg:  3.496948
